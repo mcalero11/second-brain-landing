@@ -1,26 +1,139 @@
 @import "tailwindcss";
 
+/* ─── Light mode (default) ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #F5F3EF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FAF9F7;
+  --fg: #2C2A26;
+  --fg-muted: #6B6860;
+  --fg-subtle: #9C9890;
+  --border: #D6D3CC;
+  --border-hover: #B8B5AE;
+  --primary: #4A7C59;
+  --primary-hover: #3D6A4A;
+  --primary-fg: #FFFFFF;
+  --accent: #B8860B;
+  --accent-hover: #9A7009;
+  --accent-fg: #FFFFFF;
+  --stone: #8C8680;
+  --stone-hover: #7A746E;
+  --shadow: rgba(44, 42, 38, 0.08);
+  --shadow-lg: rgba(44, 42, 38, 0.12);
+  --backdrop: rgba(245, 243, 239, 0.8);
 }
 
+/* ─── Dark mode ─── */
+[data-theme="dark"] {
+  --bg: #1A1816;
+  --bg-card: #242220;
+  --bg-card-hover: #2E2C28;
+  --fg: #F5F3EF;
+  --fg-muted: #B8B5AE;
+  --fg-subtle: #8C8880;
+  --border: #3A3836;
+  --border-hover: #4A4846;
+  --primary: #6AAF7B;
+  --primary-hover: #7EC08D;
+  --primary-fg: #1A1816;
+  --accent: #D4A017;
+  --accent-hover: #E0B030;
+  --accent-fg: #1A1816;
+  --stone: #A09A94;
+  --stone-hover: #B0AAA4;
+  --shadow: rgba(0, 0, 0, 0.2);
+  --shadow-lg: rgba(0, 0, 0, 0.3);
+  --backdrop: rgba(26, 24, 22, 0.8);
+}
+
+/* ─── Register Tailwind CSS 4 theme tokens ─── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-card: var(--bg-card);
+  --color-bg-card-hover: var(--bg-card-hover);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-stone-custom: var(--stone);
+  --color-stone-custom-hover: var(--stone-hover);
+  --color-shadow: var(--shadow);
+  --color-shadow-lg: var(--shadow-lg);
+  --color-backdrop: var(--backdrop);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Base styles ─── */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* Scroll offset for fixed navbar */
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
+/* ─── Utility classes ─── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Logo switching for light/dark themes */
+.logo-light {
+  display: block;
+}
+.logo-dark {
+  display: none;
+}
+[data-theme="dark"] .logo-light {
+  display: none;
+}
+[data-theme="dark"] .logo-dark {
+  display: block;
+}
+
+/* Focus outlines */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  body {
+    transition: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
