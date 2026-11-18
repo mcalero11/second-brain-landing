@@ -34,6 +34,9 @@ export const metadata: Metadata = {
       'An agentic system that captures, understands, and organizes your thoughts and finances — autonomously.',
     type: 'website',
   },
+  verification: {
+    google: 'SNkJ2gFN3sdimUoNH2MFzC6tyc_w2c2I0yvRtnqkUkw',
+  },
 };
 
 const themeScript = `
