@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useToast } from './Toast';
 
 export default function Footer() {
@@ -29,6 +31,14 @@ export default function Footer() {
         </div>
         <p className="mt-16 text-sm text-fg-subtle">
           &copy; {new Date().getFullYear()} Second Brain. All rights reserved.
+        </p>
+        <p className="mt-3 text-sm text-fg-subtle">
+          <Link
+            href="/privacy"
+            className="underline underline-offset-4 hover:text-fg"
+          >
+            Privacy Policy
+          </Link>
         </p>
       </div>
     </footer>
