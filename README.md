@@ -56,12 +56,17 @@ cd second-brain-landing
 pnpm install
 ```
 
-3. Run the development server:
+3. Create `.env.local` with the required environment variable (see [Environment Variables](#environment-variables)):
+```bash
+echo "SECOND_BRAIN_API_ORIGIN=https://api-int.mcalero.dev" > .env.local
+```
+
+4. Run the development server:
 ```bash
 pnpm dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the landing page.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the landing page.
 
 ## Available Scripts
 
@@ -69,6 +74,19 @@ pnpm dev
 - `pnpm build` - Build the production application
 - `pnpm start` - Start the production server
 - `pnpm lint` - Run ESLint for code quality checks
+
+## Environment Variables
+
+| Variable | Required | Example | Purpose |
+| :--- | :--- | :--- | :--- |
+| `SECOND_BRAIN_API_ORIGIN` | Yes | `https://api-int.mcalero.dev` | Origin of the Second Brain platform (no trailing slash). The build fails if it is missing. |
+
+### Gmail OAuth callback pass-through
+
+Google redirects the browser to `https://brain.mcalero.dev/oauth/gmail/callback` after the "Connect Gmail" consent. `next.config.ts` rewrites every request under `/oauth/gmail/` to `${SECOND_BRAIN_API_ORIGIN}/oauth/gmail/...` (same path, full query string) and returns the platform's response unchanged.
+
+- Do not add pages, route handlers, middleware, analytics or logging under `/oauth`: `code` and `state` are one-time secrets.
+- Do not enable `trailingSlash` or i18n routing without excluding `/oauth/gmail/callback`; Google's redirect URI must match exactly.
 
 ## Features
 
@@ -105,7 +123,8 @@ The easiest way to deploy is using the [Vercel Platform](https://vercel.com):
 1. Push your code to a Git repository
 2. Import the project to Vercel
 3. Vercel will automatically detect Next.js and configure the build settings
-4. Deploy!
+4. Set `SECOND_BRAIN_API_ORIGIN` in Project Settings → Environment Variables for Production (and Preview, if previews should build)
+5. Deploy!
 
 ### Other Platforms
 
