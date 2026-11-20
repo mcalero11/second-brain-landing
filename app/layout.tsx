@@ -17,6 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://brain.mcalero.dev'),
   title: 'Second Brain — Agentic AI for Thoughts & Finances',
   description:
     'An agentic system that captures, understands, and organizes your thoughts and finances — autonomously.',
