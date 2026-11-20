@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import ComingSoonButton from './ComingSoonButton';
 import ThemeToggle from './ThemeToggle';
 import { useToast } from './Toast';
 
+// Section links are absolute ("/#…") so they also work from /privacy.
 const NAV_LINKS = [
-  { label: 'Features', href: '#features' },
-  { label: 'How It Works', href: '#how-it-works' },
+  { label: 'Features', href: '/#features' },
+  { label: 'How It Works', href: '/#how-it-works' },
   {
     label: 'GitHub',
     href: 'https://github.com/mcalero11/second-brain',
@@ -14,52 +17,85 @@ const NAV_LINKS = [
   },
 ];
 
-export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { showToast } = useToast();
+function NavLink({
+  link,
+  onClick,
+}: {
+  link: (typeof NAV_LINKS)[number];
+  onClick?: () => void;
+}) {
+  const className = 'text-sm text-fg-muted transition-colors hover:text-fg';
+
+  if (link.external) {
+    return (
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClick}
+        className={className}
+      >
+        {link.label}
+      </a>
+    );
+  }
 
   return (
-    <header
-      role="banner"
-      className="fixed top-0 right-0 left-0 z-40 border-b border-border bg-backdrop backdrop-blur-md"
-    >
+    <Link href={link.href} onClick={onClick} className={className}>
+      {link.label}
+    </Link>
+  );
+}
+
+export default function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const { showToast } = useToast();
+
+  // Escape closes the mobile menu and returns focus to its toggle.
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [menuOpen]);
+
+  return (
+    <header className="fixed top-0 right-0 left-0 z-40 border-b border-border bg-backdrop backdrop-blur-md">
       <nav
         aria-label="Main navigation"
         className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3"
       >
         {/* Logo */}
-        <a href="#" className="text-lg font-bold text-fg">
+        <Link href="/" className="text-lg font-bold text-fg">
           Second Brain
-        </a>
+        </Link>
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-6 md:flex">
           {NAV_LINKS.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-sm text-fg-muted transition-colors hover:text-fg"
-              {...(link.external
-                ? { target: '_blank', rel: 'noopener noreferrer' }
-                : {})}
-            >
-              {link.label}
-            </a>
+            <NavLink key={link.label} link={link} />
           ))}
           <ThemeToggle />
-          <button
-            onClick={() => showToast('Coming soon!')}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-colors hover:bg-primary-hover"
-          >
+          <ComingSoonButton className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-colors hover:bg-primary-hover">
             Get Started
-          </button>
+          </ComingSoonButton>
         </div>
 
         {/* Mobile hamburger */}
         <button
-          className="flex flex-col gap-1.5 md:hidden"
-          onClick={() => setMenuOpen(!menuOpen)}
+          ref={menuButtonRef}
+          type="button"
+          className="-mr-2 flex flex-col gap-1.5 p-2 md:hidden"
+          onClick={() => setMenuOpen((open) => !open)}
           aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
           aria-label="Toggle navigation menu"
         >
           <span
@@ -76,23 +112,21 @@ export default function Navbar() {
 
       {/* Mobile menu panel */}
       {menuOpen && (
-        <div className="border-t border-border bg-bg px-6 py-4 md:hidden">
+        <div
+          id="mobile-menu"
+          className="border-t border-border bg-bg px-6 py-4 md:hidden"
+        >
           <div className="flex flex-col gap-4">
             {NAV_LINKS.map((link) => (
-              <a
+              <NavLink
                 key={link.label}
-                href={link.href}
+                link={link}
                 onClick={() => setMenuOpen(false)}
-                className="text-sm text-fg-muted transition-colors hover:text-fg"
-                {...(link.external
-                  ? { target: '_blank', rel: 'noopener noreferrer' }
-                  : {})}
-              >
-                {link.label}
-              </a>
+              />
             ))}
             <ThemeToggle />
             <button
+              type="button"
               onClick={() => {
                 showToast('Coming soon!');
                 setMenuOpen(false);

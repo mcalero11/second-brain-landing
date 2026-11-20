@@ -1,11 +1,7 @@
-'use client';
-
 import ParticleBackground from './ParticleBackground';
-import { useToast } from './Toast';
+import ComingSoonButton from './ComingSoonButton';
 
 export default function Hero() {
-  const { showToast } = useToast();
-
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
       {/* Particle layer */}
@@ -25,12 +21,9 @@ export default function Hero() {
           thoughts and finances&nbsp;&mdash; autonomously.
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <button
-            onClick={() => showToast('Coming soon!')}
-            className="rounded-lg bg-primary px-8 py-3 text-base font-medium text-primary-fg transition-colors hover:bg-primary-hover"
-          >
+          <ComingSoonButton className="rounded-lg bg-primary px-8 py-3 text-base font-medium text-primary-fg transition-colors hover:bg-primary-hover">
             Try Finance Assistant
-          </button>
+          </ComingSoonButton>
           <a
             href="https://github.com/mcalero11/second-brain"
             target="_blank"

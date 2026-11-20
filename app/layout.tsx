@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { ToastProvider } from './components/Toast';
 import SkipLink from './components/SkipLink';
@@ -17,6 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://brain.mcalero.dev'),
   title: 'Second Brain — Agentic AI for Thoughts & Finances',
   description:
     'An agentic system that captures, understands, and organizes your thoughts and finances — autonomously.',
@@ -37,6 +38,13 @@ export const metadata: Metadata = {
   verification: {
     google: 'SNkJ2gFN3sdimUoNH2MFzC6tyc_w2c2I0yvRtnqkUkw',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F5F3EF' },
+    { media: '(prefers-color-scheme: dark)', color: '#1A1816' },
+  ],
 };
 
 const themeScript = `

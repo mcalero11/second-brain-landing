@@ -1,47 +1,40 @@
 # Second Brain Landing Page
 
-A modern, clean landing page for Second Brain - an AI-powered knowledge management platform built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
-
-## Overview
-
-Second Brain helps users transform the way they organize, access, and leverage their knowledge with an intelligent system that serves as a digital extension of their mind.
+The landing site for Second Brain at [brain.mcalero.dev](https://brain.mcalero.dev), built with Next.js 16, React 19, TypeScript and Tailwind CSS 4. It also passes the Gmail OAuth callback through to the Second Brain platform (see [below](#gmail-oauth-callback-pass-through)).
 
 ## Tech Stack
 
-- **Framework**: Next.js 16.1.6
-- **React**: 19.2.3
-- **TypeScript**: 5.x
-- **Styling**: Tailwind CSS 4.0
-- **Font**: Geist Sans & Geist Mono
-- **Package Manager**: pnpm
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **React**: 19
+- **TypeScript**: 7 (`tsc`), with the TypeScript 6 API for tooling (see [TypeScript](#typescript))
+- **Styling**: Tailwind CSS 4
+- **Fonts**: Inter and JetBrains Mono via `next/font`
+- **Linting**: ESLint 10 with `eslint-config-next`
+- **Package manager**: pnpm (version pinned in `packageManager`)
 
 ## Project Structure
 
 ```
 second-brain-landing/
+├── .github/workflows/ci.yml  # Lint, type-check and build on PRs and main
 ├── app/
-│   ├── favicon.ico
-│   ├── globals.css       # Global styles and Tailwind config
-│   ├── layout.tsx        # Root layout with metadata
-│   └── page.tsx          # Home page component
-├── public/               # Static assets
-├── .gitignore
-├── eslint.config.mjs
-├── next.config.ts
-├── package.json
-├── postcss.config.mjs
-├── pnpm-lock.yaml
-├── pnpm-workspace.yaml
-├── tsconfig.json
-└── README.md
+│   ├── components/           # Page sections, navbar, theme toggle, toasts
+│   ├── privacy/page.tsx      # Privacy policy
+│   ├── globals.css           # Theme tokens (light/dark) and Tailwind setup
+│   ├── layout.tsx            # Root layout, metadata, no-flash theme script
+│   ├── page.tsx              # Home page
+│   ├── robots.ts             # robots.txt
+│   └── sitemap.ts            # sitemap.xml
+├── public/logos/             # Partner logos (light and dark variants)
+└── next.config.ts            # Security headers and the OAuth rewrite
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20.x or higher
-- pnpm (recommended) or npm
+- Node.js 20.9 or higher
+- pnpm (`corepack enable` picks up the pinned version)
 
 ### Installation
 
@@ -73,7 +66,10 @@ pnpm dev
 - `pnpm dev` - Start the development server
 - `pnpm build` - Build the production application
 - `pnpm start` - Start the production server
-- `pnpm lint` - Run ESLint for code quality checks
+- `pnpm lint` - Run ESLint
+- `pnpm typecheck` - Type-check with TypeScript 7
+
+CI runs `lint`, `typecheck` and `build` on every pull request and on `main`.
 
 ## Environment Variables
 
@@ -87,63 +83,37 @@ Google redirects the browser to `https://brain.mcalero.dev/oauth/gmail/callback`
 
 - Do not add pages, route handlers, middleware, analytics or logging under `/oauth`: `code` and `state` are one-time secrets.
 - Do not enable `trailingSlash` or i18n routing without excluding `/oauth/gmail/callback`; Google's redirect URI must match exactly.
-
-## Features
-
-- Modern, responsive design
-- Dark mode support
-- TypeScript for type safety
-- Tailwind CSS 4 for styling
-- Next.js App Router
-- Optimized fonts with next/font
-- SEO-friendly metadata
+- The security headers in `next.config.ts` deliberately skip `/oauth/gmail/*`.
 
 ## Development
 
-The page auto-updates as you edit files. The main entry point is `app/page.tsx`.
+### Theming
 
-### Styling
-
-This project uses Tailwind CSS 4 with custom theme configuration in `app/globals.css`. The theme includes:
-- Custom color variables for light and dark modes
-- Geist font family integration
-- Responsive design utilities
+Colors are CSS custom properties in `app/globals.css`: `:root` for light, `[data-theme="dark"]` for dark, registered for Tailwind with `@theme inline`. An inline script in `app/layout.tsx` sets `data-theme` before first paint, and `ThemeToggle` stores the choice (`light`, `system` or `dark`) in `localStorage`.
 
 ### TypeScript
 
-TypeScript is configured with strict mode enabled. Path aliases are set up:
-- `@/*` maps to the root directory
+TypeScript 7.0 ships no compiler API yet, while typescript-eslint and Next.js still `require("typescript")`. Following the [TypeScript 7.0 release notes](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0), `package.json` installs both:
+
+- `@typescript/native` (an alias of `typescript@7`) provides `tsc`, used by `pnpm typecheck`.
+- `typescript` (an alias of `@typescript/typescript6`) provides the TypeScript 6 API for ESLint and the Next.js build.
+
+When typescript-eslint supports TypeScript 7, drop the alias and depend on `typescript@7` directly.
+
+Strict mode is on, and `@/*` maps to the repository root.
 
 ## Deployment
 
-### Deploy on Vercel
+The site deploys on Vercel from `main`.
 
-The easiest way to deploy is using the [Vercel Platform](https://vercel.com):
+1. Set `SECOND_BRAIN_API_ORIGIN` in Project Settings → Environment Variables for Production (and Preview, if previews should build).
+2. Push to `main`, or merge a pull request.
 
-1. Push your code to a Git repository
-2. Import the project to Vercel
-3. Vercel will automatically detect Next.js and configure the build settings
-4. Set `SECOND_BRAIN_API_ORIGIN` in Project Settings → Environment Variables for Production (and Preview, if previews should build)
-5. Deploy!
-
-### Other Platforms
-
-Build the production application:
+To run it elsewhere:
 ```bash
 pnpm build
-```
-
-Then start the production server:
-```bash
 pnpm start
 ```
-
-## Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [React Documentation](https://react.dev)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs)
 
 ## License
 
