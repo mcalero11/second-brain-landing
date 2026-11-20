@@ -31,7 +31,8 @@ export default function ParticleBackground() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const parent = canvas?.parentElement;
+    if (!canvas || !parent) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -48,17 +49,15 @@ export default function ParticleBackground() {
     let mouseX = -9999;
     let mouseY = -9999;
     let animId = 0;
+    let running = false;
 
     function resize() {
-      const parent = canvas!.parentElement;
-      if (!parent) return;
-      width = parent.clientWidth;
-      height = parent.clientHeight;
+      width = parent!.clientWidth;
+      height = parent!.clientHeight;
       canvas!.width = width * dpr;
       canvas!.height = height * dpr;
       canvas!.style.width = `${width}px`;
       canvas!.style.height = `${height}px`;
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     function initParticles() {
@@ -84,55 +83,73 @@ export default function ParticleBackground() {
       }
     }
 
-    function draw() {
-      ctx!.clearRect(0, 0, width, height);
+    function step() {
       const spring = 0.02;
       const damping = 0.95;
       const repelRadius = 150;
 
       for (const p of particles) {
-        if (!prefersReducedMotion) {
-          // Spring back to home
-          let dx = p.homeX - p.x;
-          let dy = p.homeY - p.y;
-          p.vx += dx * spring;
-          p.vy += dy * spring;
+        // Spring back to home
+        let dx = p.homeX - p.x;
+        let dy = p.homeY - p.y;
+        p.vx += dx * spring;
+        p.vy += dy * spring;
 
-          // Cursor repel (desktop only)
-          if (!isMobile) {
-            dx = p.x - mouseX;
-            dy = p.y - mouseY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < repelRadius && dist > 0) {
-              const force = (repelRadius - dist) / repelRadius;
-              p.vx += (dx / dist) * force * 2;
-              p.vy += (dy / dist) * force * 2;
-            }
-          } else {
-            // Gentle idle float on mobile
-            p.vx += (Math.random() - 0.5) * 0.05;
-            p.vy += (Math.random() - 0.5) * 0.05;
+        // Cursor repel (desktop only)
+        if (!isMobile) {
+          dx = p.x - mouseX;
+          dy = p.y - mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < repelRadius && dist > 0) {
+            const force = (repelRadius - dist) / repelRadius;
+            p.vx += (dx / dist) * force * 2;
+            p.vy += (dy / dist) * force * 2;
           }
-
-          p.vx *= damping;
-          p.vy *= damping;
-          p.x += p.vx;
-          p.y += p.vy;
-          p.angle += p.spin;
+        } else {
+          // Gentle idle float on mobile
+          p.vx += (Math.random() - 0.5) * 0.05;
+          p.vy += (Math.random() - 0.5) * 0.05;
         }
 
-        ctx!.save();
-        ctx!.translate(p.x, p.y);
-        ctx!.rotate(p.angle);
-        ctx!.fillStyle = p.color;
-        ctx!.globalAlpha = 0.6;
-        ctx!.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        ctx!.restore();
+        p.vx *= damping;
+        p.vy *= damping;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.angle += p.spin;
       }
+    }
 
-      if (!prefersReducedMotion) {
-        animId = requestAnimationFrame(draw);
+    function render() {
+      ctx!.setTransform(1, 0, 0, 1, 0, 0);
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+      ctx!.globalAlpha = 0.6;
+
+      for (const p of particles) {
+        // One setTransform (scale by dpr, rotate, translate) instead of
+        // save/translate/rotate/restore per particle.
+        const cos = Math.cos(p.angle) * dpr;
+        const sin = Math.sin(p.angle) * dpr;
+        ctx!.setTransform(cos, sin, -sin, cos, p.x * dpr, p.y * dpr);
+        ctx!.fillStyle = p.color;
+        ctx!.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
       }
+    }
+
+    function frame() {
+      step();
+      render();
+      animId = requestAnimationFrame(frame);
+    }
+
+    function start() {
+      if (running || prefersReducedMotion) return;
+      running = true;
+      animId = requestAnimationFrame(frame);
+    }
+
+    function stop() {
+      running = false;
+      cancelAnimationFrame(animId);
     }
 
     function onMouseMove(e: MouseEvent) {
@@ -146,19 +163,21 @@ export default function ParticleBackground() {
       mouseY = -9999;
     }
 
-    resize();
-    initParticles();
-
-    if (prefersReducedMotion) {
-      draw(); // Single static frame
-    } else {
-      animId = requestAnimationFrame(draw);
-    }
-
-    window.addEventListener('resize', () => {
+    // Fires once on observe, then whenever the hero changes size. Redrawing
+    // here keeps the single static frame correct under reduced motion.
+    const resizeObserver = new ResizeObserver(() => {
       resize();
       initParticles();
+      render();
     });
+    resizeObserver.observe(parent);
+
+    // Only animate while the hero is on screen.
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) start();
+      else stop();
+    });
+    intersectionObserver.observe(canvas);
 
     if (!isMobile) {
       canvas.addEventListener('mousemove', onMouseMove);
@@ -166,8 +185,9 @@ export default function ParticleBackground() {
     }
 
     return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('resize', resize);
+      stop();
+      resizeObserver.disconnect();
+      intersectionObserver.disconnect();
       canvas.removeEventListener('mousemove', onMouseMove);
       canvas.removeEventListener('mouseleave', onMouseLeave);
     };

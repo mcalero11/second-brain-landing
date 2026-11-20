@@ -1,12 +1,8 @@
-'use client';
-
 import Link from 'next/link';
 
-import { useToast } from './Toast';
+import ComingSoonButton from './ComingSoonButton';
 
 export default function Footer() {
-  const { showToast } = useToast();
-
   return (
     <footer className="border-t border-border py-24">
       <div className="mx-auto max-w-4xl px-6 text-center">
@@ -14,12 +10,9 @@ export default function Footer() {
           Ready to get started?
         </h2>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <button
-            onClick={() => showToast('Coming soon!')}
-            className="rounded-lg bg-primary px-8 py-3 text-base font-medium text-primary-fg transition-colors hover:bg-primary-hover"
-          >
+          <ComingSoonButton className="rounded-lg bg-primary px-8 py-3 text-base font-medium text-primary-fg transition-colors hover:bg-primary-hover">
             Deploy Now
-          </button>
+          </ComingSoonButton>
           <a
             href="https://github.com/mcalero11/second-brain"
             target="_blank"
